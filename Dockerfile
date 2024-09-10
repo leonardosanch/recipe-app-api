@@ -17,13 +17,17 @@ ARG DEV=false
 # Configurar el entorno virtual y las dependencias
 RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
+    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache --virtual .tmp-build-deps \
+    build-base postgresql-dev musl-dev && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ "$DEV" = "true" ]; then \
     /py/bin/pip install -r /tmp/requirements.dev.txt; \
     fi && \
-    rm -rf /tmp
+    rm -rf /tmp && \
+    apk del .tmp-build-deps
 
-# Crear el usuario 'django-user'
+# Crear el usuario 'django-user' y cambiar los permisos de /app
 RUN adduser -D django-user && \
     chown -R django-user /app
 
